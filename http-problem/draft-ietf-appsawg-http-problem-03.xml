@@ -32,7 +32,7 @@
 <?rfc comments="yes" ?>
 <?rfc inline="yes" ?>
 
-<rfc ipr="trust200902" docName="draft-ietf-appsawg-http-problem-02" category="std">
+<rfc ipr="trust200902" docName="draft-ietf-appsawg-http-problem-03" category="std">
 
 	<front>
 		<title abbrev="Problem Details">Problem Details for HTTP APIs</title>
@@ -49,7 +49,7 @@
         <uri>http://dret.net/netdret/</uri>
       </address>
 	  </author>
-    <date year="2015"/>
+    <date year="2016"/>
 		<keyword>status</keyword>
 		<keyword>HTTP</keyword>
 		<keyword>error</keyword>
@@ -248,12 +248,18 @@ Content-Language: en
         analysis). Consumers SHOULD NOT automatically dereference the
         type URI.</t>
 
-        <t>The status member, if present, is only advisory; it conveys the
-        HTTP status code used for the convenience of the consumer. Generators
-        MUST use the same status code in the actual HTTP response, to assure
-        that generic HTTP software that does not understand this format still
+        <t>The status member, if present, is only advisory; it conveys the HTTP
+        status code used for the convenience of the consumer. Generators MUST
+        use the same status code in the actual HTTP response, to assure that
+        generic HTTP software that does not understand this format still
         behaves correctly. See <xref target="security-considerations"/> for
         further caveats regarding its use.</t>
+
+        <t>Consumers can use the status member to determine what the original
+          status code used by the generator was, in cases where it has been 
+          changed (e.g., by an intermediary or cache), and when message bodies
+          are persisted without HTTP information. Generic HTTP software will
+          still use the HTTP status code.</t>
 
         <t>The detail member, if present, ought to focus on helping the
         client correct the problem, rather than giving debugging
@@ -298,11 +304,12 @@ Content-Language: en
       and what's better left to other mechanisms.</t>
 
       <t>Problem details are not a debugging tool for the underlying
-      implementation; rather, they are a way to expose greater detail about
-      the HTTP interface itself. New problem types need to carefully consider
-      the Security Considerations (<xref target="security-considerations"/>);
-      in particular the risk of exposing attack vectors by exposing
-      implementation internals through error messages.</t>
+      implementation; rather, they are a way to expose greater detail about the
+      HTTP interface itself. Designers of new problem types need to carefully
+      consider the Security Considerations (<xref
+      target="security-considerations"/>); in particular the risk of exposing
+      attack vectors by exposing implementation internals through error
+      messages.</t>
       
       <t>Likewise, truly generic problems – i.e., conditions that could
       potentially apply to any resource on the Web – are usually better
@@ -324,7 +331,7 @@ Content-Language: en
       <t>New problem type definitions MUST document:
 
       <list style="numbers">
-        <t>A type URI (typically, with the "http" scheme),</t>
+        <t>A type URI (typically, with the "http" or "https" scheme),</t>
         <t>A title that appropriately describes it (think short), and</t>
         <t>The HTTP status code for it to be used with.</t>
       </list></t>
@@ -415,15 +422,17 @@ Content-Language: en
         through the HTTP interface, since this can expose sensitive details of
         the server implementation, its data, and so on.</t>
             
-        <t>The "status" member duplicates the information available in the
-        HTTP status code itself, thereby bringing the possibility of
-        disagreement between the two. Their relative precedence is not clear,
-        since a disagreement might indicate that (for example) an intermediary
-        has modified the HTTP status code in transit. As such, those defining
-        problem types as well as generators and consumers of problems need to
-        be aware that generic software (such as proxies, load balancers,
-        firewalls, virus scanners) are unlikely to know of or respect the
-        status code conveyed in this member.</t>
+        <t>The "status" member duplicates the information available in the HTTP
+        status code itself, thereby bringing the possibility of disagreement
+        between the two. Their relative precedence is not clear, since a
+        disagreement might indicate that (for example) an intermediary has
+        modified the HTTP status code in transit (e.g., by a proxy or
+        cache).</t>
+        
+        <t>As such, those defining problem types as well as generators and
+        consumers of problems need to be aware that generic software (such as
+        proxies, load balancers, firewalls, virus scanners) are unlikely to
+        know of or respect the status code conveyed in this member.</t>
 
 		</section>
 
