@@ -3,10 +3,11 @@ id_base = ..
 xml2rfc ?= xml2rfc
 saxpath ?= /usr/local/share/saxon-b/saxon9.jar
 kramdown-rfc2629 ?= kramdown-rfc2629
-bootstrap ?= ../../rfcbootstrap/rfcbootstrap.xslt
+bootstrap ?= ../Tools/rfcbootstrap/rfcbootstrap.xslt
 idnits ?= idnits
 
-title = nottingham-$(shell basename ${CURDIR})
+shortname = $(shell basename ${CURDIR})
+title = nottingham-${shortname}
 latest = $(shell (ls draft-${title}-*.xml || echo "draft-${title}-00.xml") | sort | tail -1)
 version = $(shell basename ${latest} .xml | awk -F- '{print $$NF}')
 
@@ -34,9 +35,16 @@ idnits: $(target).txt
 %.xml: draft.md
 	$(kramdown-rfc2629) $< > $@
 	
-%.html: %.xml
-	sed -i '' -e"s/\"rfc2629.dtd/\"$(id_base)\/Tools\/rfc2629xslt\/rfc2629.dtd/" $<
-	java -classpath $(saxpath) net.sf.saxon.Transform -l $< $(bootstrap) > $@
+%.html: %.xml $(bootstrap)
+	sed -i '' -e"s/\"rfc2629.dtd/\"$(id_base)\/Tools\/rfcbootstrap\/rfc2629.dtd/" $<
+	java -classpath $(saxpath) net.sf.saxon.Transform -l $< $(bootstrap) \
+	bootstrapJsUrl='../Tools/node_modules/bootstrap/dist/js/bootstrap.min.js' \
+	bootstrapCssUrl='../Tools/style.css' \
+	jqueryJsUrl='../Tools/node_modules/jquery/dist/jquery.min.js' \
+	pageUrl='https://mnot.github.io/I-D/${shortname}/' \
+	siteName="mnot's Internet Drafts" \
+	navbar='../Tools/navbar.html' \
+	> $@
 #	$(xml2rfc) --html $< $@
 
 %.txt: %.xml

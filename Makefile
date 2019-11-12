@@ -3,7 +3,8 @@
 # Usage: make [draft-short-name]
 
 files = $(wildcard *)
-reserved = Abandoned Published Tools Makefile index.md README.md _includes _layouts _site
+scss_files = $(wildcard Tools/scss/*.scss)
+reserved = Abandoned Published Tools Makefile draft_head.html index.html draft_foot.html README.md _includes _layouts _site
 drafts = $(filter-out $(reserved), $(files))
 
 %::
@@ -14,7 +15,20 @@ drafts = $(filter-out $(reserved), $(files))
 	sed -i '' -e"s/SHORTNAME/$@/g" \
 		$@/draft.md
 
-.PHONY: index.md
-index.md: $(drafts)
-	echo "---\nlayout: front\n---" > $@
-	echo '$(foreach draft,$(drafts),\n* [$(draft)]($(draft)) $(shell Tools/index.py $(draft)/draft.md))' >> $@
+index.html: $(drafts) Tools/index.py
+	cat draft_head.html > $@
+	echo "$(foreach draft,$(drafts),\n<li><a href='$(draft)'>$(draft)</a> - $(shell Tools/index.py $(draft)/draft.md)</li>)" >> $@
+	cat draft_foot.html >> $@
+
+Tools/style.css: $(scss_files)
+	scss Tools/scss/style.scss > $@
+
+.PHONY: all
+all:
+	for target in $(drafts) ; do \
+		cd $$target && make && cd .. ; \
+	done
+
+.PHONY: bootstrap
+bootstrap:
+	git submodule update --remote
